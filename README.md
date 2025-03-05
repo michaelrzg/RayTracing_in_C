@@ -1,4 +1,4 @@
-# 2D RayTracing in C with SDL3
+# RayTracing in C with SDL3
 ### RayTracing 
 ![RayTracing Demo](https://github.com/michaelrzg/raytracing_in_C/blob/main/Screenshots/Raytracing_demo.png)
 ### PathTracing (with spacial reflections)

@@ -139,7 +139,7 @@ void calculateReflectedRay(struct Ray *incidentRay, struct Circle *collisionCirc
 
 void draw_rays()
 {
-    SDL_SetRenderDrawColor(renderer, 255, 223, 0, 200); // Set initial draw color to white
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 200); // Set initial draw color to white
     for (double i = 0; i <= 360; i += 0.5f)
     {
         float angle = i * (3.1415f / 180.0f); // Convert degrees to radians
@@ -178,13 +178,13 @@ void draw_rays()
 
         if (bounced)
         {
-            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 200); // Set color to red after bounce
+            SDL_SetRenderDrawColor(renderer, 255, 223, 0, 200);
         }
 
         SDL_RenderLine(renderer, ray.x, ray.y, ray.endX, ray.endY);
 
         // Reset color for next ray
-        SDL_SetRenderDrawColor(renderer, 255, 223, 0, 200);
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 200);
     }
 }
 

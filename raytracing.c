@@ -28,9 +28,9 @@ struct Circle
 struct Circle lightbulb = {100, 100, 40};
 
 // this function draws a passed circle on the screen
-void draw_circle(struct Circle circle)
+void draw_circle(struct Circle circle, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Set the draw color to white
+    SDL_SetRenderDrawColor(renderer, r, g, b, a); // Set the draw color to white
     double radius_squared = pow(circle.radius, 2);
     for (double x = circle.x - circle.radius; x <= circle.x + circle.radius; x++)
     {
@@ -65,7 +65,7 @@ void render()
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     // draw light sorce (struct Circle)
-    draw_circle(lightbulb);
+    draw_circle(lightbulb, 255, 255, 255, 255);
     SDL_RenderPresent(renderer);
 }
 

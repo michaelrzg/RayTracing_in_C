@@ -18,6 +18,8 @@
 #define OBJECT_X 500
 #define OBJECT_Y 280
 #define OBJECT_R 80
+
+#define RAY_LENGTH 1000
 // create window and renderer (from SDL docs)
 SDL_Window *window;
 SDL_Renderer *renderer;
@@ -32,15 +34,25 @@ struct Circle
     double y;
     double radius;
 };
+
+struct Ray
+{
+    double x;
+    double y;
+    double direction;
+};
+
 // create the primary circle on the screen
 struct Circle lightbulb = {LIGHT_SOURCE_X, LIGHT_SOURCE_Y, LIGHT_SOURCE_R};
 double lightbulb_radius_squared; // setting this as a global so i dont have to recalculate every frame
+
 struct Circle object = {OBJECT_X, OBJECT_Y, OBJECT_R};
 double object_radius_squared; // same as before
+
 // this function draws a passed circle on the screen
 void draw_circle(struct Circle circle, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
-    SDL_SetRenderDrawColor(renderer, r, g, b, a); // Set the draw color to white
+    SDL_SetRenderDrawColor(renderer, r, g, b, a); // Set the draw color to passed in value
     double radius_squared = pow(circle.radius, 2);
     for (double x = circle.x - circle.radius; x <= circle.x + circle.radius; x++)
     {
@@ -56,6 +68,18 @@ void draw_circle(struct Circle circle, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
                 }
             }
         }
+    }
+}
+
+void draw_rays()
+{
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Set the draw color to white
+    for (double i = 0; i <= 360; i++)
+    {
+        float angle = i * (3.1415f / 180.0f); // Convert degrees to radians
+        float endX = lightbulb.x + cos(angle) * RAY_LENGTH;
+        float endY = lightbulb.y + sin(angle) * RAY_LENGTH;
+        SDL_RenderLine(renderer, lightbulb.x, lightbulb.y, endX, endY);
     }
 }
 
@@ -78,6 +102,7 @@ void render()
     draw_circle(lightbulb, 255, 255, 255, 255);
     // draw the object that casts shadows
     draw_circle(object, 100, 100, 100, 255);
+    draw_rays();
     SDL_RenderPresent(renderer);
 }
 
@@ -87,6 +112,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     render();
     return SDL_APP_CONTINUE;
 }
+
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
     if (event->type == SDL_EVENT_QUIT)
@@ -136,6 +162,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     }
     return SDL_APP_CONTINUE;
 }
+
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv)
 {
     lightbulb_radius_squared = pow(lightbulb.radius, 2);

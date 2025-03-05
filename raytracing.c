@@ -15,9 +15,13 @@
 #define LIGHT_SOURCE_Y 280
 #define LIGHT_SOURCE_R 40
 
-#define OBJECT_X 500
+#define OBJECT_X 400
 #define OBJECT_Y 280
 #define OBJECT_R 80
+
+#define OBJECT1_X 600
+#define OBJECT1_Y 280
+#define OBJECT1_R 50
 
 #define RAY_LENGTH 1000
 #define NUM_OF_POINTS_ON_RAY 500
@@ -49,6 +53,9 @@ double lightbulb_radius_squared; // setting this as a global so i dont have to r
 
 struct Circle object = {OBJECT_X, OBJECT_Y, OBJECT_R};
 double object_radius_squared; // same as before
+
+struct Circle object1 = {OBJECT1_X, OBJECT1_Y, OBJECT1_R};
+double object1_radius_squared; // same as before
 
 // this function draws a passed circle on the screen
 void draw_circle(struct Circle circle, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
@@ -92,17 +99,26 @@ bool check_collision(struct Ray *ray)
             ray->endY = y;
             break;
         }
+        double distance_to_object1 = pow(x - object1.x, 2) + pow(y - object1.y, 2);
+        if (distance_to_object1 <= object1_radius_squared)
+        {
+            ray->endX = x;
+            ray->endY = y;
+            break;
+        }
     }
 }
 void draw_rays()
 {
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Set the draw color to white
-    for (double i = 0; i <= 360; i++)
+    for (double i = 0; i <= 360; i += 0.5f)
     {
         float angle = i * (3.1415f / 180.0f); // Convert degrees to radians
         float endX = lightbulb.x + cos(angle) * RAY_LENGTH;
         float endY = lightbulb.y + sin(angle) * RAY_LENGTH;
-        struct Ray ray = {lightbulb.x, lightbulb.y, endX, endY, angle};
+        float startX = lightbulb.x + cos(angle);
+        float startY = lightbulb.y + sin(angle);
+        struct Ray ray = {startX, startY, endX, endY, angle};
         check_collision(&ray);
         SDL_RenderLine(renderer, ray.x, ray.y, ray.endX, ray.endY);
     }
@@ -127,6 +143,8 @@ void render()
     draw_circle(lightbulb, 255, 255, 255, 255);
     // draw the object that casts shadows
     draw_circle(object, 100, 100, 100, 255);
+    draw_circle(object1, 100, 100, 100, 255);
+
     draw_rays();
     SDL_RenderPresent(renderer);
 }
@@ -172,16 +190,22 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
             SDL_Log("Dragging: x=%d, y=%d", x, y);
             // check if we are on the lightbulb or the object or neither
             double distance_to_lightbulb = pow(x - lightbulb.x, 2) + pow(y - lightbulb.y, 2);
+            double distance_to_object = pow(x - object.x, 2) + pow(y - object.y, 2);
+            double distance_to_object1 = pow(x - object1.x, 2) + pow(y - object1.y, 2);
             if (distance_to_lightbulb <= lightbulb_radius_squared)
             {
                 lightbulb.x = x;
                 lightbulb.y = y;
             }
-            double distance_to_object = pow(x - object.x, 2) + pow(y - object.y, 2);
-            if (distance_to_object <= lightbulb_radius_squared)
+            else if (distance_to_object <= lightbulb_radius_squared)
             {
                 object.x = x;
                 object.y = y;
+            }
+            else if (distance_to_object1 <= lightbulb_radius_squared)
+            {
+                object1.x = x;
+                object1.y = y;
             }
         }
     }
@@ -192,6 +216,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv)
 {
     lightbulb_radius_squared = pow(lightbulb.radius, 2);
     object_radius_squared = pow(object.radius, 2);
+    object1_radius_squared = pow(object1.radius, 2);
     // check initilization
     if (!SDL_Init(SDL_INIT_VIDEO))
     {

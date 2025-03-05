@@ -20,7 +20,7 @@
 #define OBJECT_R 80
 
 #define RAY_LENGTH 1000
-#define NUM_OF_POINTS_ON_RAY 1000
+#define NUM_OF_POINTS_ON_RAY 500
 // create window and renderer (from SDL docs)
 SDL_Window *window;
 SDL_Renderer *renderer;

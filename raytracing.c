@@ -10,6 +10,14 @@
 #define WIDTH 800
 #define HEIGHT 600
 #define COLOR_WHITE 0xffffffff
+
+#define LIGHT_SOURCE_X 200
+#define LIGHT_SOURCE_Y 280
+#define LIGHT_SOURCE_R 40
+
+#define OBJECT_X 500
+#define OBJECT_Y 280
+#define OBJECT_R 80
 // create window and renderer (from SDL docs)
 SDL_Window *window;
 SDL_Renderer *renderer;
@@ -25,8 +33,10 @@ struct Circle
     double radius;
 };
 // create the primary circle on the screen
-struct Circle lightbulb = {100, 100, 40};
-
+struct Circle lightbulb = {LIGHT_SOURCE_X, LIGHT_SOURCE_Y, LIGHT_SOURCE_R};
+double lightbulb_radius_squared; // setting this as a global so i dont have to recalculate every frame
+struct Circle object = {OBJECT_X, OBJECT_Y, OBJECT_R};
+double object_radius_squared; // same as before
 // this function draws a passed circle on the screen
 void draw_circle(struct Circle circle, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
@@ -66,6 +76,8 @@ void render()
     SDL_RenderClear(renderer);
     // draw light sorce (struct Circle)
     draw_circle(lightbulb, 255, 255, 255, 255);
+    // draw the object that casts shadows
+    draw_circle(object, 100, 100, 100, 255);
     SDL_RenderPresent(renderer);
 }
 
@@ -75,7 +87,6 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     render();
     return SDL_APP_CONTINUE;
 }
-
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
     if (event->type == SDL_EVENT_QUIT)
@@ -108,15 +119,27 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
             int x = event->motion.x;
             int y = event->motion.y;
             SDL_Log("Dragging: x=%d, y=%d", x, y);
-
-            lightbulb.x = x;
-            lightbulb.y = y;
+            // check if we are on the lightbulb or the object or neither
+            double distance_to_lightbulb = pow(x - lightbulb.x, 2) + pow(y - lightbulb.y, 2);
+            if (distance_to_lightbulb <= lightbulb_radius_squared)
+            {
+                lightbulb.x = x;
+                lightbulb.y = y;
+            }
+            double distance_to_object = pow(x - object.x, 2) + pow(y - object.y, 2);
+            if (distance_to_object <= lightbulb_radius_squared)
+            {
+                object.x = x;
+                object.y = y;
+            }
         }
     }
     return SDL_APP_CONTINUE;
 }
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv)
 {
+    lightbulb_radius_squared = pow(lightbulb.radius, 2);
+    object_radius_squared = pow(object.radius, 2);
     // check initilization
     if (!SDL_Init(SDL_INIT_VIDEO))
     {

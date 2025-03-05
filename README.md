@@ -1,11 +1,12 @@
 # 2D RayTracing in C with SDL3
-
+### RayTracing 
 ![RayTracing Demo](https://github.com/michaelrzg/raytracing_in_C/blob/main/Screenshots/Raytracing_demo.png)
+### PathTracing (with spacial reflections)
+![PathTracing Demo](https://github.com/michaelrzg/raytracing_in_C/blob/main/Screenshots/PathTracing_demo.png)
 
 ## Overview
 
 This project implements 2D ray tracing and path tracing algorithms in C, leveraging the capabilities of the new SDL3 (released Jan 2025) for graphics rendering.
-Inspired by [this youtube video](https://www.youtube.com/watch?v=27iEILBpI04&ab_channel=HirschDaniel)
 ## Features
 
 * **2D Ray Tracing:** Simulates the propagation of light rays to render scenes with shadows and reflections.

@@ -5,7 +5,7 @@
 ## Overview
 
 This project implements 2D ray tracing and path tracing algorithms in C, leveraging the capabilities of the new SDL3 (released Jan 2025) for graphics rendering.
-Inspired by [this youtube video](https://www.youtube.com/@HirschDaniel) (this implementation uses a different approach)
+Inspired by [this youtube video](https://www.youtube.com/watch?v=27iEILBpI04&ab_channel=HirschDaniel)
 ## Features
 
 * **2D Ray Tracing:** Simulates the propagation of light rays to render scenes with shadows and reflections.

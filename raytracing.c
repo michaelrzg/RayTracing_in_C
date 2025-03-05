@@ -46,6 +46,7 @@ struct Ray
     double endX;
     double endY;
     double angle;
+    bool collided;
 };
 // create the primary circle on the screen
 struct Circle lightbulb = {LIGHT_SOURCE_X, LIGHT_SOURCE_Y, LIGHT_SOURCE_R};
@@ -82,45 +83,108 @@ void draw_circle(struct Circle circle, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 //  x = start.x + t * (end.x - start.x)
 //  y = start.y + t * (end.y - start.y)
 //  where t ranges from 0 to 1
-bool check_collision(struct Ray *ray)
+bool check_collision(struct Ray *ray, struct Circle *collisionCircle)
 {
     // difference in x and y to get lines vector
     double dx = ray->endX - ray->x;
     double dy = ray->endY - ray->y;
+    double radius_squared = pow(collisionCircle->radius, 2);
+
     for (int i = 0; i < NUM_OF_POINTS_ON_RAY; i++)
     {
         double t = (double)i / (double)(NUM_OF_POINTS_ON_RAY - 1); // Normalize t to [0, 1]
         double x = ray->x + t * (ray->endX - ray->x);
         double y = ray->y + t * (ray->endY - ray->y);
-        double distance_to_object = pow(x - object.x, 2) + pow(y - object.y, 2);
-        if (distance_to_object <= object_radius_squared)
+        double distance_to_object = pow(x - collisionCircle->x, 2) + pow(y - collisionCircle->y, 2);
+        if (distance_to_object <= radius_squared)
         {
             ray->endX = x;
             ray->endY = y;
-            break;
-        }
-        double distance_to_object1 = pow(x - object1.x, 2) + pow(y - object1.y, 2);
-        if (distance_to_object1 <= object1_radius_squared)
-        {
-            ray->endX = x;
-            ray->endY = y;
-            break;
+            return true;
         }
     }
+    return false;
 }
+
+// Function to calculate the reflected ray vector
+void calculateReflectedRay(struct Ray *incidentRay, struct Circle *collisionCircle)
+{
+    // Calculate normal vector
+    double normalX = incidentRay->endX - collisionCircle->x;
+    double normalY = incidentRay->endY - collisionCircle->y;
+    double normalLength = sqrt(normalX * normalX + normalY * normalY);
+    normalX /= normalLength;
+    normalY /= normalLength;
+
+    // Calculate incident ray vector
+    double incidentX = incidentRay->endX - incidentRay->x;
+    double incidentY = incidentRay->endY - incidentRay->y;
+    double incidentLength = sqrt(incidentX * incidentX + incidentY * incidentY);
+    incidentX /= incidentLength;
+    incidentY /= incidentLength;
+
+    // Calculate dot product
+    double dot = incidentX * normalX + incidentY * normalY;
+
+    // Calculate reflected ray vector
+    double reflectedX = incidentX - 2 * dot * normalX;
+    double reflectedY = incidentY - 2 * dot * normalY;
+
+    // Set reflected ray start and end points
+    incidentRay->x = incidentRay->endX;
+    incidentRay->y = incidentRay->endY;
+    incidentRay->endX = incidentRay->x + reflectedX * RAY_LENGTH;
+    incidentRay->endY = incidentRay->y + reflectedY * RAY_LENGTH;
+}
+
 void draw_rays()
 {
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Set the draw color to white
+    SDL_SetRenderDrawColor(renderer, 255, 223, 0, 200); // Set initial draw color to white
     for (double i = 0; i <= 360; i += 0.5f)
     {
         float angle = i * (3.1415f / 180.0f); // Convert degrees to radians
         float endX = lightbulb.x + cos(angle) * RAY_LENGTH;
         float endY = lightbulb.y + sin(angle) * RAY_LENGTH;
-        float startX = lightbulb.x + cos(angle);
-        float startY = lightbulb.y + sin(angle);
-        struct Ray ray = {startX, startY, endX, endY, angle};
-        check_collision(&ray);
+        float startX = lightbulb.x + cos(angle) * lightbulb.radius;
+        float startY = lightbulb.y + sin(angle) * lightbulb.radius;
+        struct Ray ray = {startX, startY, endX, endY, angle, false};
+
+        // Check if ray starts inside an object (abort ray)
+        double distance_to_object1 = pow(startX - object1.x, 2) + pow(startY - object1.y, 2);
+        if (distance_to_object1 <= object1_radius_squared)
+        {
+            continue;
+        }
+        double distance_to_object = pow(startX - object.x, 2) + pow(startY - object.y, 2);
+        if (distance_to_object <= object_radius_squared)
+        {
+            continue;
+        }
+
+        // Check for collision and apply reflection
+        bool bounced = false;
+        if (check_collision(&ray, &object))
+        {
+            calculateReflectedRay(&ray, &object);
+            bounced = true;
+            check_collision(&ray, &object1);
+        }
+        else if (check_collision(&ray, &object1))
+        {
+            calculateReflectedRay(&ray, &object1);
+            bounced = true;
+            check_collision(&ray, &object);
+        }
+
+        if (bounced)
+        {
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 200); // Set color to red after bounce
+        }
+
         SDL_RenderLine(renderer, ray.x, ray.y, ray.endX, ray.endY);
+
+        // Reset color for next ray
+        SDL_SetRenderDrawColor(renderer, 255, 223, 0, 200);
     }
 }
 
@@ -140,7 +204,7 @@ void render()
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     // draw light sorce (struct Circle)
-    draw_circle(lightbulb, 255, 255, 255, 255);
+    draw_circle(lightbulb, 255, 223, 0, 200);
     // draw the object that casts shadows
     draw_circle(object, 100, 100, 100, 255);
     draw_circle(object1, 100, 100, 100, 255);

@@ -20,6 +20,7 @@
 #define OBJECT_R 80
 
 #define RAY_LENGTH 1000
+#define NUM_OF_POINTS_ON_RAY 1000
 // create window and renderer (from SDL docs)
 SDL_Window *window;
 SDL_Renderer *renderer;
@@ -34,14 +35,14 @@ struct Circle
     double y;
     double radius;
 };
-
 struct Ray
 {
     double x;
     double y;
-    double direction;
+    double endX;
+    double endY;
+    double angle;
 };
-
 // create the primary circle on the screen
 struct Circle lightbulb = {LIGHT_SOURCE_X, LIGHT_SOURCE_Y, LIGHT_SOURCE_R};
 double lightbulb_radius_squared; // setting this as a global so i dont have to recalculate every frame
@@ -70,7 +71,29 @@ void draw_circle(struct Circle circle, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
         }
     }
 }
-
+// The x and y coordinates of each point are calculated using the formula:
+//  x = start.x + t * (end.x - start.x)
+//  y = start.y + t * (end.y - start.y)
+//  where t ranges from 0 to 1
+bool check_collision(struct Ray *ray)
+{
+    // difference in x and y to get lines vector
+    double dx = ray->endX - ray->x;
+    double dy = ray->endY - ray->y;
+    for (int i = 0; i < NUM_OF_POINTS_ON_RAY; i++)
+    {
+        double t = (double)i / (double)(NUM_OF_POINTS_ON_RAY - 1); // Normalize t to [0, 1]
+        double x = ray->x + t * (ray->endX - ray->x);
+        double y = ray->y + t * (ray->endY - ray->y);
+        double distance_to_object = pow(x - object.x, 2) + pow(y - object.y, 2);
+        if (distance_to_object <= object_radius_squared)
+        {
+            ray->endX = x;
+            ray->endY = y;
+            break;
+        }
+    }
+}
 void draw_rays()
 {
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Set the draw color to white
@@ -79,7 +102,9 @@ void draw_rays()
         float angle = i * (3.1415f / 180.0f); // Convert degrees to radians
         float endX = lightbulb.x + cos(angle) * RAY_LENGTH;
         float endY = lightbulb.y + sin(angle) * RAY_LENGTH;
-        SDL_RenderLine(renderer, lightbulb.x, lightbulb.y, endX, endY);
+        struct Ray ray = {lightbulb.x, lightbulb.y, endX, endY, angle};
+        check_collision(&ray);
+        SDL_RenderLine(renderer, ray.x, ray.y, ray.endX, ray.endY);
     }
 }
 

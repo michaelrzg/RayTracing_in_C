@@ -45,7 +45,7 @@ Here is the general idea from [the raytracing Wikipedia page](https://en.wikiped
 
 
 ### SDL3  
-This SDL3 Implementation utilizes SDL3's new main callbacks approach, meaning it does not need a typical "main" function starting point.
+This SDL3 Implementation utilizes SDL3's new main callbacks approach, meaning it does not need a typical "main" function starting point. [Documentation](https://wiki.libsdl.org/SDL3/README/main-functions)
 
 1.  **Initialization:** SDL3 is initialized, a window is created, and a renderer is set up.
 2.  **Event Loop:** The program enters an event loop to handle user input and window events.
@@ -59,6 +59,7 @@ This SDL3 Implementation utilizes SDL3's new main callbacks approach, meaning it
 ### Prerequisites
 
 * **SDL3 Development Libraries:** You will need the SDL3 development libraries installed on your system.
+  [link to downloads page](https://github.com/libsdl-org/SDL/releases)
 * **C Compiler:** A C compiler (GCC) is required.
 * **Make (Optional):** A build tool like Make can simplify the build process.
 

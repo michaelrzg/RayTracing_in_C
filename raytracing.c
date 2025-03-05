@@ -116,8 +116,8 @@ void draw_rays()
         float angle = i * (3.1415f / 180.0f); // Convert degrees to radians
         float endX = lightbulb.x + cos(angle) * RAY_LENGTH;
         float endY = lightbulb.y + sin(angle) * RAY_LENGTH;
-        float startX = lightbulb.x + cos(angle);
-        float startY = lightbulb.y + sin(angle);
+        float startX = lightbulb.x + cos(angle) * lightbulb.radius;
+        float startY = lightbulb.y + sin(angle) * lightbulb.radius;
         struct Ray ray = {startX, startY, endX, endY, angle};
         check_collision(&ray);
         SDL_RenderLine(renderer, ray.x, ray.y, ray.endX, ray.endY);
